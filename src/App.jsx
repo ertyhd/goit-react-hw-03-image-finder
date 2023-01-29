@@ -1,9 +1,12 @@
 import { Component } from 'react';
+import Notiflix from 'notiflix';
 
 import styles from './app.module.css';
 import ImageGallery from './components/ImageGallery/ImageGallery';
 import Searchbar from './components/Searchbar/Searchbar';
 import getImages from 'shared/getImages';
+import Button from 'components/Button/Button';
+import Modal from 'components/Modal/Modal';
 
 class App extends Component {
   state = {
@@ -13,6 +16,9 @@ class App extends Component {
     searchQuery: '',
     page: 1,
     totalHits: 0,
+    largeImageURL: '',
+    imgAlt: '',
+    showModal: false,
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -57,15 +63,60 @@ class App extends Component {
   //     })
   //     .finally(() => this.setState({ loading: false }));
   // }
+
+  loadMore = () => {
+    this.setState(({ page }) => ({ page: page + 1 }));
+  };
+
+  handleShowModal = event => {
+    const imgAlt = event.target.alt;
+    const largeImageURL = event.target.srcset;
+    this.setState({
+      showModal: true,
+      imgAlt: imgAlt,
+      largeImageURL: largeImageURL,
+    });
+  };
+
+  handleCloseModal = () => {
+    this.setState({
+      showModal: false,
+      imgAlt: '',
+      largeImageURL: '',
+    });
+  };
+
   render() {
-    const { items, loading, error } = this.state;
-    const { hadleSeachSubmit } = this;
+    const {
+      items,
+      loading,
+      error,
+      totalHits,
+      imgAlt,
+      largeImageURL,
+      showModal,
+    } = this.state;
+    const { hadleSeachSubmit, loadMore, handleCloseModal, handleShowModal } =
+      this;
 
     return (
       <div className={styles.app}>
         <Searchbar onSubmit={hadleSeachSubmit} />
         {items.length > 0 && (
-          <ImageGallery items={items} loading={loading} error={error} />
+          <ImageGallery items={items} handleShowModal={handleShowModal} />
+        )}
+        {error && Notiflix.Notify.failure(`${error}`)}
+        {items.length > 0 && items.length < totalHits && (
+          <Button loadMore={loadMore} />
+        )}
+        {(loading && Notiflix.Loading.pulse()) ||
+          (!loading && Notiflix.Loading.remove())}
+        {showModal && (
+          <Modal
+            imgAlt={imgAlt}
+            imgLargeSrc={largeImageURL}
+            onModalClose={handleCloseModal}
+          />
         )}
       </div>
     );

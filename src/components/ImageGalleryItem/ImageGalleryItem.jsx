@@ -1,10 +1,16 @@
 import styles from './imageGalleryItem.module.css';
 import PropTypes from 'prop-types';
 
-function ImageGalleryItem({ webformatURL, alt, largeImageURL }) {
+function ImageGalleryItem({
+  webformatURL,
+  alt,
+  largeImageURL,
+  handleShowModal,
+}) {
   return (
     <li className={styles.imageGalleryItem}>
       <img
+        onClick={handleShowModal}
         src={webformatURL}
         srcSet={largeImageURL}
         alt={alt}
